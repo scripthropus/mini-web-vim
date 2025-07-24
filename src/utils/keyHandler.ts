@@ -59,18 +59,8 @@ export const handleKeyEvent = (
 		}
 
 		if (e.key.length === 1 || e.key === "Space") {
-			const row = textState.cursor.row;
-			const line = textState.buffer[row];
-			const newLine = insertChar(line, e.key, textState.cursor);
-			const newBuffer = [...textState.buffer];
-			newBuffer[row] = newLine;
-
 			return {
-				textState: {
-					...textState,
-					buffer: newBuffer,
-					cursor: { ...textState.cursor, col: textState.cursor.col + 1 },
-				},
+				textState: insertChar(e.key, textState),
 				mode: "insert",
 			};
 		}
