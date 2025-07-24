@@ -54,21 +54,23 @@ export const handleKeyEvent = (
 			};
 		}
 
-		const row = textState.cursor.row;
-		const line = textState.buffer[row];
-		const newLine = insertChar(line, e.key, textState.cursor);
-		const newBuffer = [...textState.buffer];
-		newBuffer[row] = newLine;
+		if (e.key.length === 1) {
+			const row = textState.cursor.row;
+			const line = textState.buffer[row];
+			const newLine = insertChar(line, e.key, textState.cursor);
+			const newBuffer = [...textState.buffer];
+			newBuffer[row] = newLine;
 
-		return {
-			textState: {
-				...textState,
-				buffer: newBuffer,
-				cursor: { ...textState.cursor, col: textState.cursor.col + 1 },
-			},
-			mode: "insert",
-		};
+			return {
+				textState: {
+					...textState,
+					buffer: newBuffer,
+					cursor: { ...textState.cursor, col: textState.cursor.col + 1 },
+				},
+				mode: "insert",
+			};
+		}
 	}
 
-	return { textState, mode: "normal" };
+	return { textState, mode: "insert" };
 };
