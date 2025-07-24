@@ -17,7 +17,7 @@ function Vim() {
 	};
 
 	const renderLine = (line: string, rowIndex: number) => (
-		<div key={rowIndex}>
+		<div key={rowIndex} style={{ minHeight: "1.2em" }}>
 			{line.split("").map((char, colIndex) => {
 				const isCursor =
 					rowIndex === textState.cursor.row &&
@@ -34,6 +34,19 @@ function Vim() {
 					</span>
 				);
 			})}
+			{textState.cursor.row === rowIndex &&
+				(line.length === 0 || textState.cursor.col >= line.length) && (
+					<span
+						style={{
+							backgroundColor: "#ffffff",
+							color: "#000000",
+							width: "8px",
+							display: "inline-block",
+						}}
+					>
+						&nbsp;
+					</span>
+				)}
 		</div>
 	);
 

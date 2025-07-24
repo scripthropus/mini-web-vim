@@ -51,6 +51,19 @@ test('l キーで右に移動', () => {
   expect(handleKeyEvent(keyEvent, textState, "normal").textState.cursor.col).toBe(2);
 });
 
+test("o キーで下に行を挿入してinsertモードになる", () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "o"});
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2", "", "line3"],
+      cursor: { row: 2, col: 0}
+    },
+    mode: "insert"
+  };
+  expect(handleKeyEvent(keyEvent, textState, "normal")).toStrictEqual(expected);
+});
+
 test('無効なキーでは何も変わらない', () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   

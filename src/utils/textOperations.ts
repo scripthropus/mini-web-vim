@@ -1,4 +1,4 @@
-import type { CursorPosition } from "../types/editor";
+import type { CursorPosition, EditorState, TextState } from "../types/editor";
 
 export const insertChar = (
 	str: string,
@@ -16,4 +16,15 @@ export const deleteChar = (str: string, cursor: CursorPosition) => {
 	const right = str.slice(cursor.col);
 
 	return left + right;
+};
+
+export const insertNewLineBelow = (textState: TextState): EditorState => {
+	const { buffer, cursor } = textState;
+	const newBuffer = buffer.toSpliced(cursor.row + 1, 0, "");
+	const newCursor = { row: cursor.row + 1, col: 0 };
+
+	return {
+		textState: { buffer: newBuffer, cursor: newCursor },
+		mode: "insert",
+	};
 };
