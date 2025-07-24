@@ -36,6 +36,9 @@ export const handleKeyEvent = (
 		if (e.key === "Escape") {
 			return { textState, mode: "normal" };
 		}
+		if (e.key === "Enter") {
+			return { ...insertNewLineBelow(textState), mode: "insert" };
+		}
 
 		if (e.key === "Backspace") {
 			const row = textState.cursor.row;
