@@ -35,6 +35,28 @@ export const deleteChar = (textState: TextState): TextState => {
 	}
 };
 
+export const deleteCharAtCursor = (textState: TextState): TextState => {
+	const { buffer, cursor } = textState;
+	const currentLine = buffer[cursor.row];
+
+	if (cursor.col >= currentLine.length) {
+		return textState;
+	}
+
+	const left = currentLine.slice(0, cursor.col);
+	const right = currentLine.slice(cursor.col + 1);
+	const newLine = left + right;
+
+	const newBuffer = [...buffer];
+	newBuffer[cursor.row] = newLine;
+
+	return {
+		...textState,
+		buffer: newBuffer,
+		cursor: { ...cursor, col: cursor.col - 1 },
+	};
+};
+
 export const insertNewLineBelow = (textState: TextState): EditorState => {
 	const { buffer, cursor } = textState;
 	const newBuffer = buffer.toSpliced(cursor.row + 1, 0, "");

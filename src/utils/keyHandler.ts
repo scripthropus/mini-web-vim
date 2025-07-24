@@ -1,6 +1,11 @@
 import type { EditorState, KeyEvent, Mode, TextState } from "../types/editor";
 import { moveCursor } from "./cursorOperations";
-import { deleteChar, insertChar, insertNewLineBelow } from "./textOperations";
+import {
+	deleteChar,
+	deleteCharAtCursor,
+	insertChar,
+	insertNewLineBelow,
+} from "./textOperations";
 
 export const handleKeyEvent = (
 	e: KeyEvent,
@@ -26,6 +31,9 @@ export const handleKeyEvent = (
 
 			case "o":
 				return insertNewLineBelow(textState);
+
+			case "x":
+				return { textState: deleteCharAtCursor(textState), mode: "normal" };
 
 			default:
 				return { textState, mode: "normal" };
