@@ -23,6 +23,7 @@ const STYLES = {
 	},
 	line: {
 		minHeight: "1.2em",
+		whiteSpace: "pre" as const,
 	},
 };
 

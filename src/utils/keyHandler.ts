@@ -36,6 +36,7 @@ export const handleKeyEvent = (
 		if (e.key === "Escape") {
 			return { textState, mode: "normal" };
 		}
+
 		if (e.key === "Enter") {
 			return { ...insertNewLineBelow(textState), mode: "insert" };
 		}
@@ -57,7 +58,7 @@ export const handleKeyEvent = (
 			};
 		}
 
-		if (e.key.length === 1) {
+		if (e.key.length === 1 || e.key === "Space") {
 			const row = textState.cursor.row;
 			const line = textState.buffer[row];
 			const newLine = insertChar(line, e.key, textState.cursor);
