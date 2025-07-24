@@ -42,18 +42,8 @@ export const handleKeyEvent = (
 		}
 
 		if (e.key === "Backspace") {
-			const row = textState.cursor.row;
-			const line = textState.buffer[row];
-			const newLine = deleteChar(line, textState.cursor);
-			const newBuffer = [...textState.buffer];
-			newBuffer[row] = newLine;
-
 			return {
-				textState: {
-					...textState,
-					buffer: newBuffer,
-					cursor: { ...textState.cursor, col: textState.cursor.col - 1 },
-				},
+				textState: deleteChar(textState),
 				mode: "insert",
 			};
 		}

@@ -13,11 +13,26 @@ export const insertChar = (char: string, textState: TextState): TextState => {
 	return { buffer: newBuffer, cursor: { ...cursor, col: cursor.col + 1 } };
 };
 
-export const deleteChar = (str: string, cursor: CursorPosition) => {
-	const left = str.slice(0, cursor.col - 1);
-	const right = str.slice(cursor.col);
+export const deleteChar = (textState: TextState): TextState => {
+	const { buffer, cursor } = textState;
+	const currentLine = buffer[cursor.row];
+	if (cursor.col > 1) {
+		const left = currentLine.slice(0, Math.max(0, cursor.col - 1));
+		const right = currentLine.slice(cursor.col);
+		const newLine = left + right;
 
-	return left + right;
+		const newBuffer = [...buffer];
+		newBuffer[cursor.row] = newLine;
+
+		return { buffer: newBuffer, cursor: { ...cursor, col: cursor.col - 1 } };
+	} else {
+		const { buffer, cursor } = textState;
+		const newLine = currentLine.slice(cursor.col);
+		const newBuffer = [...buffer];
+		newBuffer[cursor.row] = newLine;
+
+		return { buffer: newBuffer, cursor: { ...cursor, col: 0 } };
+	}
 };
 
 export const insertNewLineBelow = (textState: TextState): EditorState => {
