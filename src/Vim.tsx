@@ -75,9 +75,9 @@ function Vim() {
 		operatorCount: 1,
 	});
 
-	const handleKeyDown = (e: React.KeyboardEvent) => {
+	const handleKeyDown = async (e: React.KeyboardEvent) => {
 		e.preventDefault();
-		const newState = handleKeyEvent(e, editorState);
+		const newState = await handleKeyEvent(e, editorState);
 		setEditorState(newState);
 	};
 

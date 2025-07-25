@@ -23,37 +23,42 @@ const editorState: EditorState = {
   mode: "normal"
 };
 
-test('i キーでinsert modeに切り替わる', () => {
+test('i キーでinsert modeに切り替わる', async () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "i"});
-  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual({...editorState, mode: "insert"});
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual({...editorState, mode: "insert"});
 });
 
 
-test('j キーで下に移動', () => {
+test('j キーで下に移動', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "j"});
+  const result = await handleKeyEvent(keyEvent, editorState);
   
-  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.row).toBe(2);
+  expect(result.textState.cursor.row).toBe(2);
 });
 
-test('k キーで上に移動', () => {
+test('k キーで上に移動', async () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "k"});
+  const result = await handleKeyEvent(keyEvent, editorState); 
   
-  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.row).toBe(0);
+  expect(result.textState.cursor.row).toBe(0);
 });
 
-test('h キーで左に移動', () => {
+test('h キーで左に移動', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "h"});
+  const result = await handleKeyEvent(keyEvent, editorState); 
   
-  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.col).toBe(0);
+  expect(result.textState.cursor.col).toBe(0);
 });
 
-test('l キーで右に移動', () => {
+test('l キーで右に移動', async () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "l"});
+  const result = await handleKeyEvent(keyEvent, editorState);
   
-  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.col).toBe(2);
+  expect(result.textState.cursor.col).toBe(2);
 });
 
-test("o キーで下に行を挿入してinsertモードになる", () => {
+test("o キーで下に行を挿入してinsertモードになる", async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "o"});
 
   const expected: EditorState = {  
@@ -65,11 +70,14 @@ test("o キーで下に行を挿入してinsertモードになる", () => {
     operatorCount: 1,
     mode: "insert"
   };
-  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual(expected);
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
 });
 
-test('無効なキーでは何も変わらない', () => {
+test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
+  const result = await handleKeyEvent(keyEvent, editorState);
   
-  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual(editorState);
+  expect(result).toStrictEqual(editorState);
 });

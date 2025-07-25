@@ -1,4 +1,5 @@
 import type { EditorState, KeyEvent } from "../types/editor";
+import { copyLineToClipboard, readClipboardAndInsert } from "./clipboard";
 import { moveCursor } from "./cursorOperations";
 import {
 	deleteChar,
@@ -7,10 +8,10 @@ import {
 	insertNewLineBelow,
 } from "./textOperations";
 
-export const handleKeyEvent = (
+export const handleKeyEvent = async (
 	e: KeyEvent,
 	editorState: EditorState,
-): EditorState => {
+): Promise<EditorState> => {
 	if (editorState.mode === "normal") {
 		switch (e.key) {
 			case "a": {
@@ -63,21 +64,19 @@ export const handleKeyEvent = (
 					...editorState,
 					textState: deleteCharAtCursor(editorState.textState),
 				};
-      
-      case "y":
-        if(editorState.pendingOperator === "y"){
-          const copyToClipboard = async()=> {
-            const cursorRow = editorState.textState.cursor.row;
-            const line = editorState.textState.buffer[cursorRow];
-            await navigator.clipboard.writeText(line);
-          }
-          copyToClipboard();
-        }
-        if(editorState.pendingOperator === ""){
-          return { ...editorState, pendingOperator: "y"};
-        }
 
-        return { ...editorState, pendingOperator: ""};
+			case "p":
+				return readClipboardAndInsert(editorState);
+
+			case "y":
+				if (editorState.pendingOperator === "y") {
+					copyLineToClipboard(editorState);
+				}
+				if (editorState.pendingOperator === "") {
+					return { ...editorState, pendingOperator: "y" };
+				}
+
+				return { ...editorState, pendingOperator: "" };
 
 			default:
 				return editorState;
