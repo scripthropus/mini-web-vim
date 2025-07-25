@@ -13,6 +13,21 @@ export const handleKeyEvent = (
 ): EditorState => {
 	if (editorState.mode === "normal") {
 		switch (e.key) {
+			case "a": {
+				const newCol = Math.min(
+					editorState.textState.cursor.col + 1,
+					editorState.textState.buffer[editorState.textState.cursor.row].length,
+				);
+				return {
+					...editorState,
+					textState: {
+						...editorState.textState,
+						cursor: { ...editorState.textState.cursor, col: newCol },
+					},
+					mode: "insert",
+				};
+			}
+
 			case "i":
 				return { ...editorState, mode: "insert" };
 
