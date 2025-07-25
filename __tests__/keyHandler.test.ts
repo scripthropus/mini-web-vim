@@ -16,39 +16,41 @@ const textState: TextState = {
   cursor: { row: 1, col: 1}
 };
 
-const initialState: EditorState = {
+const editorState: EditorState = {
   textState: textState,
+  pendingOperator: "",
+  operatorCount: 1,
   mode: "normal"
 };
 
 test('i キーでinsert modeに切り替わる', () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "i"});
-  expect(handleKeyEvent(keyEvent, textState, "normal")).toStrictEqual({...initialState, mode: "insert"});
+  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual({...editorState, mode: "insert"});
 });
 
 
 test('j キーで下に移動', () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "j"});
   
-  expect(handleKeyEvent(keyEvent, textState, "normal").textState.cursor.row).toBe(2);
+  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.row).toBe(2);
 });
 
 test('k キーで上に移動', () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "k"});
   
-  expect(handleKeyEvent(keyEvent, textState, "normal").textState.cursor.row).toBe(0);
+  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.row).toBe(0);
 });
 
 test('h キーで左に移動', () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "h"});
   
-  expect(handleKeyEvent(keyEvent, textState, "normal").textState.cursor.col).toBe(0);
+  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.col).toBe(0);
 });
 
 test('l キーで右に移動', () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "l"});
   
-  expect(handleKeyEvent(keyEvent, textState, "normal").textState.cursor.col).toBe(2);
+  expect(handleKeyEvent(keyEvent, editorState).textState.cursor.col).toBe(2);
 });
 
 test("o キーで下に行を挿入してinsertモードになる", () => {
@@ -59,13 +61,15 @@ test("o キーで下に行を挿入してinsertモードになる", () => {
       buffer: ["line1", "line2", "", "line3"],
       cursor: { row: 2, col: 0}
     },
+    pendingOperator: "",
+    operatorCount: 1,
     mode: "insert"
   };
-  expect(handleKeyEvent(keyEvent, textState, "normal")).toStrictEqual(expected);
+  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual(expected);
 });
 
 test('無効なキーでは何も変わらない', () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   
-  expect(handleKeyEvent(keyEvent, textState, "normal")).toStrictEqual(initialState);
+  expect(handleKeyEvent(keyEvent, editorState)).toStrictEqual(editorState);
 });

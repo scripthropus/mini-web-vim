@@ -1,4 +1,4 @@
-import type { EditorState, KeyEvent, Mode, TextState } from "../types/editor";
+import type { EditorState, KeyEvent } from "../types/editor";
 import { moveCursor } from "./cursorOperations";
 import {
 	deleteChar,
@@ -9,60 +9,59 @@ import {
 
 export const handleKeyEvent = (
 	e: KeyEvent,
-	textState: TextState,
-	mode: Mode,
+  editorState: EditorState
 ): EditorState => {
-	if (mode === "normal") {
+	if (editorState.mode === "normal") {
 		switch (e.key) {
 			case "i":
-				return { textState, mode: "insert" };
+				return { ...editorState, mode: "insert" };
 
 			case "j":
-				return { textState: moveCursor(textState, "down"), mode };
+				return { ...editorState, textState:moveCursor(editorState.textState, "down") };
 
 			case "k":
-				return { textState: moveCursor(textState, "up"), mode };
+				return { ...editorState, textState: moveCursor(editorState.textState, "up") };
 
 			case "h":
-				return { textState: moveCursor(textState, "left"), mode };
+				return { ...editorState, textState: moveCursor(editorState.textState, "left") };
 
 			case "l":
-				return { textState: moveCursor(textState, "right"), mode };
+				return { ...editorState, textState: moveCursor(editorState.textState, "right") };
 
 			case "o":
-				return insertNewLineBelow(textState);
+				return insertNewLineBelow(editorState);
 
 			case "x":
-				return { textState: deleteCharAtCursor(textState), mode: "normal" };
+				return { ...editorState, textState: deleteCharAtCursor(editorState.textState) };
 
 			default:
-				return { textState, mode: "normal" };
+				return editorState;
 		}
 	}
 
-	if (mode === "insert") {
+	if (editorState.mode === "insert") {
 		if (e.key === "Escape") {
-			return { textState, mode: "normal" };
+			return { ...editorState, mode: "normal" };
 		}
 
 		if (e.key === "Enter") {
-			return { ...insertNewLineBelow(textState), mode: "insert" };
+			return { ...insertNewLineBelow(editorState)};
 		}
 
 		if (e.key === "Backspace") {
 			return {
-				textState: deleteChar(textState),
-				mode: "insert",
+        ...editorState,
+				textState: deleteChar(editorState.textState),
 			};
 		}
 
 		if (e.key.length === 1 || e.key === "Space") {
 			return {
-				textState: insertChar(e.key, textState),
-				mode: "insert",
+        ...editorState,
+				textState: insertChar(e.key, editorState.textState),
 			};
 		}
 	}
 
-	return { textState, mode: "insert" };
+	return  editorState;
 };
