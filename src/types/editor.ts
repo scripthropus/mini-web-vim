@@ -13,8 +13,8 @@ export interface CursorPosition {
 
 export interface EditorState {
 	textState: TextState;
-  pendingOperator: string;
-  operatorCount: number;
+	pendingOperator: string;
+	operatorCount: number;
 	mode: Mode;
 }
 

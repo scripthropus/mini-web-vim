@@ -60,15 +60,15 @@ export const deleteCharAtCursor = (textState: TextState): TextState => {
 };
 
 export const insertNewLineBelow = (editorState: EditorState): EditorState => {
-  const {textState, pendingOperator, operatorCount } = editorState
+	const { textState, pendingOperator, operatorCount } = editorState;
 	const { buffer, cursor } = textState;
 	const newBuffer = buffer.toSpliced(cursor.row + 1, 0, "");
 	const newCursor = { row: cursor.row + 1, col: 0 };
 
 	return {
 		textState: { buffer: newBuffer, cursor: newCursor },
-    pendingOperator: pendingOperator,
-    operatorCount: operatorCount,
+		pendingOperator: pendingOperator,
+		operatorCount: operatorCount,
 		mode: "insert",
 	};
 };

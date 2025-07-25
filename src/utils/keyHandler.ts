@@ -9,7 +9,7 @@ import {
 
 export const handleKeyEvent = (
 	e: KeyEvent,
-  editorState: EditorState
+	editorState: EditorState,
 ): EditorState => {
 	if (editorState.mode === "normal") {
 		switch (e.key) {
@@ -17,22 +17,37 @@ export const handleKeyEvent = (
 				return { ...editorState, mode: "insert" };
 
 			case "j":
-				return { ...editorState, textState:moveCursor(editorState.textState, "down") };
+				return {
+					...editorState,
+					textState: moveCursor(editorState.textState, "down"),
+				};
 
 			case "k":
-				return { ...editorState, textState: moveCursor(editorState.textState, "up") };
+				return {
+					...editorState,
+					textState: moveCursor(editorState.textState, "up"),
+				};
 
 			case "h":
-				return { ...editorState, textState: moveCursor(editorState.textState, "left") };
+				return {
+					...editorState,
+					textState: moveCursor(editorState.textState, "left"),
+				};
 
 			case "l":
-				return { ...editorState, textState: moveCursor(editorState.textState, "right") };
+				return {
+					...editorState,
+					textState: moveCursor(editorState.textState, "right"),
+				};
 
 			case "o":
 				return insertNewLineBelow(editorState);
 
 			case "x":
-				return { ...editorState, textState: deleteCharAtCursor(editorState.textState) };
+				return {
+					...editorState,
+					textState: deleteCharAtCursor(editorState.textState),
+				};
 
 			default:
 				return editorState;
@@ -45,23 +60,23 @@ export const handleKeyEvent = (
 		}
 
 		if (e.key === "Enter") {
-			return { ...insertNewLineBelow(editorState)};
+			return { ...insertNewLineBelow(editorState) };
 		}
 
 		if (e.key === "Backspace") {
 			return {
-        ...editorState,
+				...editorState,
 				textState: deleteChar(editorState.textState),
 			};
 		}
 
 		if (e.key.length === 1 || e.key === "Space") {
 			return {
-        ...editorState,
+				...editorState,
 				textState: insertChar(e.key, editorState.textState),
 			};
 		}
 	}
 
-	return  editorState;
+	return editorState;
 };

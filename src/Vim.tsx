@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Mode, TextState } from "./types/editor";
+import type { EditorState } from "./types/editor";
 import { handleKeyEvent } from "./utils/keyHandler";
 
 const STYLES = {
@@ -65,30 +65,33 @@ const Line = ({ line, rowIndex, cursorRow, cursorCol }: LineProps) => {
 };
 
 function Vim() {
-	const [textState, setTextState] = useState<TextState>({
-		buffer: ["line1", "line2", "line3"],
-		cursor: { row: 1, col: 1 },
+	const [editorState, setEditorState] = useState<EditorState>({
+		textState: {
+			buffer: ["line1", "line2", "line3"],
+			cursor: { row: 1, col: 1 },
+		},
+		mode: "normal",
+		pendingOperator: "",
+		operatorCount: 1,
 	});
-	const [mode, setMode] = useState<Mode>("normal");
 
 	const handleKeyDown = (e: React.KeyboardEvent) => {
 		e.preventDefault();
-		const result = handleKeyEvent(e, textState, mode);
-		setTextState(result.textState);
-		setMode(result.mode);
+		const newState = handleKeyEvent(e, editorState);
+		setEditorState(newState);
 	};
 
 	return (
 		<>
-			<div>Mode: {mode}</div>
+			<div>Mode: {editorState.mode}</div>
 			<div tabIndex={0} onKeyDown={handleKeyDown} style={STYLES.editor}>
-				{textState.buffer.map((line, rowIndex) => (
+				{editorState.textState.buffer.map((line, rowIndex) => (
 					<Line
 						key={rowIndex}
 						line={line}
 						rowIndex={rowIndex}
-						cursorRow={textState.cursor.row}
-						cursorCol={textState.cursor.col}
+						cursorRow={editorState.textState.cursor.row}
+						cursorCol={editorState.textState.cursor.col}
 					/>
 				))}
 			</div>
