@@ -39,7 +39,7 @@ export const deleteCharAtCursor = (textState: TextState): TextState => {
 	const { buffer, cursor } = textState;
 	const currentLine = buffer[cursor.row];
 
-	if (cursor.col >= currentLine.length) {
+	if (cursor.col >= currentLine.length || cursor.col < 0) {
 		return textState;
 	}
 
@@ -53,7 +53,7 @@ export const deleteCharAtCursor = (textState: TextState): TextState => {
 	return {
 		...textState,
 		buffer: newBuffer,
-		cursor: { ...cursor, col: cursor.col - 1 },
+		cursor: { ...cursor, col: Math.max(0,cursor.col - 1)},
 	};
 };
 
