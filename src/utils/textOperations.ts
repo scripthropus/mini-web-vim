@@ -50,10 +50,12 @@ export const deleteCharAtCursor = (textState: TextState): TextState => {
 	const newBuffer = [...buffer];
 	newBuffer[cursor.row] = newLine;
 
+	const col = cursor.col === newLine.length ? cursor.col - 1 : cursor.col;
+
 	return {
 		...textState,
 		buffer: newBuffer,
-		cursor: { ...cursor, col: Math.max(0,cursor.col - 1)},
+		cursor: { ...cursor, col: Math.max(0, col) },
 	};
 };
 
