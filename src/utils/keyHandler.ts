@@ -63,6 +63,21 @@ export const handleKeyEvent = (
 					...editorState,
 					textState: deleteCharAtCursor(editorState.textState),
 				};
+      
+      case "y":
+        if(editorState.pendingOperator === "y"){
+          const copyToClipboard = async()=> {
+            const cursorRow = editorState.textState.cursor.row;
+            const line = editorState.textState.buffer[cursorRow];
+            await navigator.clipboard.writeText(line);
+          }
+          copyToClipboard();
+        }
+        if(editorState.pendingOperator === ""){
+          return { ...editorState, pendingOperator: "y"};
+        }
+
+        return { ...editorState, pendingOperator: ""};
 
 			default:
 				return editorState;
