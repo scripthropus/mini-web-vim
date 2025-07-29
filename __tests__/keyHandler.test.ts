@@ -29,6 +29,36 @@ test('i キーでinsert modeに切り替わる', async () => {
   expect(result).toStrictEqual({...editorState, mode: "insert"});
 });
 
+test('a キーでカーソルの後ろでinsert modeに切り替わる', async () => {
+  const keyEvent = new KeyboardEvent("keydown", {key: "a"});
+  const expected: EditorState = {
+    ...editorState,
+    textState:{
+      buffer: ["line1", "line2", "line3"],
+      cursor: { row: 1, col: 2}
+    },
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
+});
+
+test('A キーで行末でinsert modeに切り替わる', async () => {
+  const keyEvent = new KeyboardEvent("keydown", {key: "A"});
+  const expected: EditorState = {
+    ...editorState,
+    textState:{
+      buffer: ["line1", "line2", "line3"],
+      cursor: { row: 1, col: 5}
+    },
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
+});
+
 
 test('j キーで下に移動', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: "j"});

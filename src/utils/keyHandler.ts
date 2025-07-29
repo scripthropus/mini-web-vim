@@ -92,6 +92,19 @@ export const handleKeyEvent = async (
 				}
 				return editorState;
 
+			case "A": {
+				const row = editorState.textState.cursor.row;
+				const newCol = Math.max(0, editorState.textState.buffer[row].length);
+				return {
+					...editorState,
+					textState: {
+						...editorState.textState,
+						cursor: { ...editorState.textState.cursor, col: newCol },
+					},
+					mode: "insert",
+				};
+			}
+
 			case "O":
 				return insertNewLineAbove(editorState);
 
