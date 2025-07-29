@@ -1,5 +1,9 @@
 import type { EditorState, KeyEvent } from "../types/editor";
-import { copyLineToClipboard, readClipboardAndInsert } from "./clipboard";
+import {
+	copyLineToClipboard,
+	ddCommand,
+	readClipboardAndInsert,
+} from "./clipboard";
 import { moveCursor } from "./cursorOperations";
 import {
 	deleteChar,
@@ -77,6 +81,15 @@ export const handleKeyEvent = async (
 				}
 
 				return { ...editorState, pendingOperator: "" };
+
+			case "d":
+				if (editorState.pendingOperator === "") {
+					return { ...editorState, pendingOperator: "d" };
+				}
+				if (editorState.pendingOperator === "d") {
+					return ddCommand(editorState);
+				}
+				return editorState;
 
 			default:
 				return editorState;

@@ -1,6 +1,7 @@
 import { test, expect} from "vitest";
 import { insertChar, deleteCharAtCursor} from "../src/utils/textOperations.ts";
-import { TextState } from "../src/types/editor.ts";
+import { EditorState, TextState } from "../src/types/editor.ts";
+import { ddCommand } from "../src/utils/clipboard.ts";
 
 test("文字を挿入することができる", () => {
 const textState: TextState = {
