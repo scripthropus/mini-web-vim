@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EditorState } from "./types/editor";
 import { handleKeyEvent } from "./utils/keyHandler";
 
@@ -24,6 +24,14 @@ const STYLES = {
 	line: {
 		minHeight: "1.2em",
 		whiteSpace: "pre" as const,
+	},
+	commandDisplay: {
+		minHeight: "1.2em",
+		display: "inline-block",
+		padding: "2px 4px",
+		backgroundColor: "#333",
+		color: "#fff",
+		fontFamily: "monospace",
 	},
 };
 
@@ -74,17 +82,48 @@ function Vim() {
 		pendingOperator: "",
 		operatorCount: 1,
 	});
+	const [currentCommand, setCurrentCommand] = useState<string>("");
+	const [animationTrigger, setAnimationTrigger] = useState<number>(0);
+	const commandRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+		const el = commandRef.current;
+		if (el) {
+			el.style.transformOrigin = "center";
+			el.style.display = "inline-block";
+			el.animate(
+				[
+					{ transform: "scale(1)" },
+					{ transform: "scale(2)" },
+					{ transform: "scale(1)" },
+				],
+				{
+					duration: 100,
+				},
+			);
+		}
+	}, [animationTrigger]);
 
 	const handleKeyDown = async (e: React.KeyboardEvent) => {
 		e.preventDefault();
 		const newState = await handleKeyEvent(e, editorState);
+		setCurrentCommand(`${editorState.pendingOperator}${e.key}`);
+		setAnimationTrigger((prev) => prev + 1);
 		setEditorState(newState);
 	};
 
 	return (
 		<>
 			<div>Mode: {editorState.mode}</div>
-			<div tabIndex={0} onKeyDown={handleKeyDown} style={STYLES.editor}>
+			<div ref={commandRef} style={STYLES.commandDisplay}>
+				{currentCommand || <>&nbsp;</>}
+			</div>
+			<div
+				tabIndex={0}
+				onKeyDown={handleKeyDown}
+				style={STYLES.editor}
+				role="textbox"
+			>
 				{editorState.textState.buffer.map((line, rowIndex) => (
 					<Line
 						key={rowIndex}
