@@ -1,6 +1,6 @@
 import {test, expect, vi } from 'vitest';
 import { handleKeyEvent } from '../src/utils/keyHandler';
-import type { TextState, EditorState } from '../src/types/editor';
+import type { TextState, EditorState, CursorPosition  } from '../src/types/editor';
 
 const mockKeyboardEvent = vi.fn().mockImplementation((type, options) => ({
   type,
@@ -22,6 +22,16 @@ const editorState: EditorState = {
   operatorCount: 1,
   mode: "normal"
 };
+
+test("0キーで行頭へ移動する", async () => {
+  const keyEvent = new KeyboardEvent("keydown", {key: "0"});
+  const cursor: CursorPosition = {
+    row: editorState.textState.cursor.row,
+    col: 0,
+  };
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual({...editorState, textState: {...editorState.textState, cursor: cursor}});
+})
 
 test('i キーでinsert modeに切り替わる', async () => {
   const keyEvent = new KeyboardEvent("keydown", {key: "i"});
@@ -122,6 +132,70 @@ test("大文字の O キーで上に行を挿入してinsertモードになる",
   expect(result).toStrictEqual(expected);
 });
 
+test("Gキーで行末へ移動", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "G"});
+  const cursor: CursorPosition = {
+    row: 2,
+    col: 1
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual({ ...editorState, textState: { ...editorState.textState, cursor: cursor}});
+});
+
+test("Gキーでカーソル位置よりも，最終行が短い場合は最終行の行末末へ移動", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "G"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2-line2", "line3"],
+      cursor: { row: 1, col: 10}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2-line2", "line3"],
+      cursor: { row: 2, col: 4}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
+});
+
+test("Gキーでカーソル位置よりも，最終行が長い場合は最終行のカーソルの位置へ移動", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "G"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "line3-line3"],
+      cursor: { row: 1, col: 4}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2", "line3-line3"],
+      cursor: { row: 2, col: 4}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
+});
 
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});

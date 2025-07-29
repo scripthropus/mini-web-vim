@@ -19,6 +19,18 @@ export const handleKeyEvent = async (
 ): Promise<EditorState> => {
 	if (editorState.mode === "normal") {
 		switch (e.key) {
+			case "0": {
+				const row = editorState.textState.cursor.row;
+				const newCursor = { row: row, col: 0 };
+				return {
+					...editorState,
+					textState: {
+						...editorState.textState,
+						cursor: newCursor,
+					},
+				};
+			}
+
 			case "a": {
 				const newCol = Math.min(
 					editorState.textState.cursor.col + 1,
@@ -102,6 +114,26 @@ export const handleKeyEvent = async (
 						cursor: { ...editorState.textState.cursor, col: newCol },
 					},
 					mode: "insert",
+				};
+			}
+
+			case "G": {
+				const lastRowIndex = Math.max(
+					0,
+					editorState.textState.buffer.length - 1,
+				);
+				const lastRowLength = Math.max(
+					0,
+					editorState.textState.buffer[lastRowIndex].length - 1,
+				);
+				const col = editorState.textState.cursor.col;
+				const newCol = col > lastRowLength ? lastRowLength : col;
+				return {
+					...editorState,
+					textState: {
+						...editorState.textState,
+						cursor: { row: lastRowIndex, col: newCol },
+					},
 				};
 			}
 
