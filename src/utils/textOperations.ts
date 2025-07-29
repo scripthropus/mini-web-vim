@@ -88,3 +88,17 @@ export const insertNewLineBelow = (editorState: EditorState): EditorState => {
 		mode: "insert",
 	};
 };
+
+export const insertNewLineAbove = (editorState: EditorState): EditorState => {
+	const { textState, pendingOperator, operatorCount } = editorState;
+	const { buffer, cursor } = textState;
+	const newBuffer = buffer.toSpliced(cursor.row, 0, "");
+	const newCursor = { row: cursor.row, col: 0 };
+
+	return {
+		textState: { buffer: newBuffer, cursor: newCursor },
+		pendingOperator: pendingOperator,
+		operatorCount: operatorCount,
+		mode: "insert",
+	};
+};

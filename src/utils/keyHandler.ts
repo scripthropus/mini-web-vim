@@ -9,6 +9,7 @@ import {
 	deleteChar,
 	deleteCharAtCursor,
 	insertChar,
+	insertNewLineAbove,
 	insertNewLineBelow,
 } from "./textOperations";
 
@@ -90,6 +91,9 @@ export const handleKeyEvent = async (
 					return ddCommand(editorState);
 				}
 				return editorState;
+
+			case "O":
+				return insertNewLineAbove(editorState);
 
 			default:
 				return editorState;

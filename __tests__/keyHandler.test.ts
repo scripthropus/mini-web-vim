@@ -75,6 +75,24 @@ test("o キーで下に行を挿入してinsertモードになる", async () => 
   expect(result).toStrictEqual(expected);
 });
 
+test("大文字の O キーで上に行を挿入してinsertモードになる", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "O"});
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "", "line2", "line3"],
+      cursor: { row: 1, col: 0}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+  expect(result).toStrictEqual(expected);
+});
+
+
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   const result = await handleKeyEvent(keyEvent, editorState);

@@ -75,8 +75,8 @@ const Line = ({ line, rowIndex, cursorRow, cursorCol }: LineProps) => {
 function Vim() {
 	const [editorState, setEditorState] = useState<EditorState>({
 		textState: {
-			buffer: ["line1", "line2", "line3"],
-			cursor: { row: 1, col: 1 },
+			buffer: ["", "", "", "", ""],
+			cursor: { row: 0, col: 0 },
 		},
 		mode: "normal",
 		pendingOperator: "",
