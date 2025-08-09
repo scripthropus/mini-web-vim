@@ -1,18 +1,5 @@
 import type { EditorState, TextState } from "../types/editor";
 
-export const insertChar = (char: string, textState: TextState): TextState => {
-	const { buffer, cursor } = textState;
-	const currentLine = buffer[cursor.row];
-	const left = currentLine.slice(0, cursor.col);
-	const right = currentLine.slice(cursor.col);
-	const newLine = left + char + right;
-
-	const newBuffer = [...buffer];
-	newBuffer[cursor.row] = newLine;
-
-	return { buffer: newBuffer, cursor: { ...cursor, col: cursor.col + 1 } };
-};
-
 export const insertString = (str: string, textState: TextState): TextState => {
 	const { buffer, cursor } = textState;
 	const currentLine = buffer[cursor.row];
@@ -101,4 +88,38 @@ export const insertNewLineAbove = (editorState: EditorState): EditorState => {
 		operatorCount: operatorCount,
 		mode: "insert",
 	};
+};
+
+export const automaticBracketInsertion = (
+	bracket: string,
+	editorState: EditorState,
+): EditorState => {
+	let rightBracket = "";
+	switch (bracket) {
+		case "{":
+			rightBracket = "}";
+			break;
+		case "(":
+			rightBracket = ")";
+			break;
+		case "[":
+			rightBracket = "]";
+			break;
+	}
+
+	const brackets = bracket + rightBracket;
+	const textState = insertString(brackets, editorState.textState);
+	const cursor = textState.cursor;
+	const newEditorState: EditorState = {
+		...editorState,
+		textState: {
+			...textState,
+			cursor: {
+				...cursor,
+				col: cursor.col - 1,
+			},
+		},
+	};
+
+	return newEditorState;
 };

@@ -197,6 +197,91 @@ test("Gキーでカーソル位置よりも，最終行が長い場合は最終�
   expect(result).toStrictEqual(expected);
 });
 
+test('insertモードで(を入力したら()が入力されカーソルが()の中に移動する', async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "("});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "console.log"],
+      cursor: { row: 2, col: 11}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2", "console.log()"],
+      cursor: { row: 2, col: 12}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+test('insertモードで{を入力したら{}が入力されカーソルが{}の中に移動する', async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "{"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const obj = "],
+      cursor: { row: 2, col: 13}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2", "const obj = {}"],
+      cursor: { row: 2, col: 14}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+test('insertモードで[を入力したら[]が入力されカーソルが[]の中に移動する', async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "["});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const arr = "],
+      cursor: { row: 2, col: 13}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2", "const arr = []"],
+      cursor: { row: 2, col: 14}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   const result = await handleKeyEvent(keyEvent, editorState);

@@ -6,11 +6,12 @@ import {
 } from "./clipboard";
 import { moveCursor } from "./cursorOperations";
 import {
+	automaticBracketInsertion,
 	deleteChar,
 	deleteCharAtCursor,
-	insertChar,
 	insertNewLineAbove,
 	insertNewLineBelow,
+	insertString,
 } from "./textOperations";
 
 export const handleKeyEvent = async (
@@ -161,10 +162,22 @@ export const handleKeyEvent = async (
 			};
 		}
 
+		if (e.key === "(") {
+			return automaticBracketInsertion(e.key, editorState);
+		}
+
+		if (e.key === "{") {
+			return automaticBracketInsertion(e.key, editorState);
+		}
+
+		if (e.key === "[") {
+			return automaticBracketInsertion(e.key, editorState);
+		}
+
 		if (e.key.length === 1 || e.key === "Space") {
 			return {
 				...editorState,
-				textState: insertChar(e.key, editorState.textState),
+				textState: insertString(e.key, editorState.textState),
 			};
 		}
 	}

@@ -1,5 +1,5 @@
 import { test, expect} from "vitest";
-import { insertChar, deleteCharAtCursor} from "../src/utils/textOperations.ts";
+import { insertString, deleteCharAtCursor} from "../src/utils/textOperations.ts";
 import { EditorState, TextState } from "../src/types/editor.ts";
 import { ddCommand } from "../src/utils/clipboard.ts";
 
@@ -13,7 +13,7 @@ const textState: TextState = {
   cursor: { row: 1, col: 2}
   }
   
-  expect(insertChar( "a", textState)).toStrictEqual(expected);
+  expect(insertString( "a", textState)).toStrictEqual(expected);
 })
 
 test("カーソル上の文字を消すことができる", () => {
