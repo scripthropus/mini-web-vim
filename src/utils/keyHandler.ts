@@ -13,6 +13,7 @@ import {
 	insertNewLineAbove,
 	insertNewLineBelow,
 	insertString,
+	splitAtCursor,
 } from "./textOperations";
 
 export const handleKeyEvent = async (
@@ -153,7 +154,7 @@ export const handleKeyEvent = async (
 		}
 
 		if (e.key === "Enter") {
-			return { ...insertNewLineBelow(editorState) };
+			return { ...splitAtCursor(editorState) };
 		}
 
 		if (e.key === "Backspace") {

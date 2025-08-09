@@ -337,6 +337,33 @@ test("insertモードで'を入力したら''が入力されカーソルが''の
   expect(result).toStrictEqual(expected);
 });
 
+test("insertモードでenterを入力したらカーソル位置以降の部分が次の行へ移動する", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "Enter"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 2, col: 20}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const expected: EditorState = {  
+    textState:{
+      buffer: ["line1", "line2",  "const main = () => {", "}"],
+      cursor: { row: 3, col: 0}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "insert"
+  };
+
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
 
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});

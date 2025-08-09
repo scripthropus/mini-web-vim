@@ -143,3 +143,22 @@ export const autoQuotePairing = (
 
 	return newEditorState;
 };
+
+export const splitAtCursor = (editorState: EditorState): EditorState => {
+	const { buffer, cursor } = editorState.textState;
+	const currentLine = buffer[cursor.row];
+	const left = currentLine.slice(0, cursor.col);
+	const newLine = currentLine.slice(cursor.col);
+
+	const newBuffer = [...buffer].toSpliced(cursor.row + 1, 0, newLine);
+	newBuffer[cursor.row] = left;
+	const newTextState: TextState = {
+		buffer: newBuffer,
+		cursor: {
+			row: cursor.row + 1,
+			col: 0,
+		},
+	};
+
+	return { ...editorState, textState: newTextState };
+};
