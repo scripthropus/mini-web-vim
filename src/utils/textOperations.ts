@@ -123,3 +123,23 @@ export const automaticBracketInsertion = (
 
 	return newEditorState;
 };
+
+export const autoQuotePairing = (
+	quote: string,
+	editorState: EditorState,
+): EditorState => {
+	const quotes = quote + quote;
+	const textState = insertString(quotes, editorState.textState);
+	const newEditorState: EditorState = {
+		...editorState,
+		textState: {
+			...textState,
+			cursor: {
+				...textState.cursor,
+				col: textState.cursor.col - 1,
+			},
+		},
+	};
+
+	return newEditorState;
+};

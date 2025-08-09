@@ -7,6 +7,7 @@ import {
 import { moveCursor } from "./cursorOperations";
 import {
 	automaticBracketInsertion,
+	autoQuotePairing,
 	deleteChar,
 	deleteCharAtCursor,
 	insertNewLineAbove,
@@ -172,6 +173,14 @@ export const handleKeyEvent = async (
 
 		if (e.key === "[") {
 			return automaticBracketInsertion(e.key, editorState);
+		}
+
+		if (e.key === '"') {
+			return autoQuotePairing(e.key, editorState);
+		}
+
+		if (e.key === "'") {
+			return autoQuotePairing(e.key, editorState);
 		}
 
 		if (e.key.length === 1 || e.key === "Space") {
