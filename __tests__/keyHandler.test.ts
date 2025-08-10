@@ -365,6 +365,25 @@ test("insertモードでenterを入力したらカーソル位置以降の部分
   expect(result).toStrictEqual(expected);
 });
 
+test("エスケープが押された際にpendingOperatorが消える", async () => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "Escape"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 2, col: 20}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {...editorState, pendingOperator: ""} ;
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   const result = await handleKeyEvent(keyEvent, editorState);

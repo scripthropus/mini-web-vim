@@ -133,7 +133,10 @@ function Vim() {
 	const handleKeyDown = async (e: React.KeyboardEvent) => {
 		e.preventDefault();
 		const newState = await handleKeyEvent(e, editorState);
-		setCurrentCommand(`${editorState.pendingOperator}${e.key}`);
+		const prevOperator = editorState.pendingOperator;
+		setCurrentCommand(
+			`${prevOperator !== "" ? newState.pendingOperator : ""}${e.key}`,
+		);
 		setAnimationTrigger((prev) => prev + 1);
 		setEditorState(newState);
 	};

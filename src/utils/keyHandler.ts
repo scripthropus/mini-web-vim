@@ -22,6 +22,9 @@ export const handleKeyEvent = async (
 ): Promise<EditorState> => {
 	if (editorState.mode === "normal") {
 		switch (e.key) {
+			case "Escape":
+				return { ...editorState, pendingOperator: "" };
+
 			case "0": {
 				const row = editorState.textState.cursor.row;
 				const newCursor = { row: row, col: 0 };
