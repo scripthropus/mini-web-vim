@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from "react";
-import type { EditorState } from "./types/editor";
+import type { EditorState, Mode } from "./types/editor";
 import { handleKeyEvent } from "./utils/keyHandler";
 
 const STYLES = {
 	cursor: {
 		backgroundColor: "#ffffff",
 		color: "#000000",
+	},
+	insertCursor: {
+		borderLeft: "2px solid #ffffff",
+		color: "#00ff00",
 	},
 	normalText: {
 		color: "#00ff00",
@@ -38,22 +42,43 @@ const STYLES = {
 interface CharProps {
 	char: string;
 	isCursor: boolean;
+	mode: Mode;
 }
 
-const Char = ({ char, isCursor }: CharProps) => (
-	<span style={isCursor ? STYLES.cursor : STYLES.normalText}>{char}</span>
-);
+const Char = ({ char, isCursor, mode }: CharProps) => {
+	const style = isCursor
+		? mode === "insert"
+			? STYLES.insertCursor
+			: STYLES.cursor
+		: STYLES.normalText;
+	return <span style={style}>{char}</span>;
+};
 
-const EmptyCursor = () => <span style={STYLES.emptyCursor}>&nbsp;</span>;
+interface EmptyCursorProps {
+	mode: Mode;
+}
+
+const EmptyCursor = ({ mode }: EmptyCursorProps) => {
+	const style =
+		mode === "insert"
+			? {
+					...STYLES.emptyCursor,
+					borderLeft: "2px solid #ffffff",
+					backgroundColor: "transparent",
+				}
+			: STYLES.emptyCursor;
+	return <span style={style}>&nbsp;</span>;
+};
 
 interface LineProps {
 	line: string;
 	rowIndex: number;
 	cursorRow: number;
 	cursorCol: number;
+	mode: Mode;
 }
 
-const Line = ({ line, rowIndex, cursorRow, cursorCol }: LineProps) => {
+const Line = ({ line, rowIndex, cursorRow, cursorCol, mode }: LineProps) => {
 	const isCursorRow = rowIndex === cursorRow;
 	const shouldShowEmptyCursor =
 		isCursorRow && (line.length === 0 || cursorCol >= line.length);
@@ -65,9 +90,10 @@ const Line = ({ line, rowIndex, cursorRow, cursorCol }: LineProps) => {
 					key={colIndex}
 					char={char}
 					isCursor={isCursorRow && colIndex === cursorCol}
+					mode={mode}
 				/>
 			))}
-			{shouldShowEmptyCursor && <EmptyCursor />}
+			{shouldShowEmptyCursor && <EmptyCursor mode={mode} />}
 		</div>
 	);
 };
@@ -131,6 +157,7 @@ function Vim() {
 						rowIndex={rowIndex}
 						cursorRow={editorState.textState.cursor.row}
 						cursorCol={editorState.textState.cursor.col}
+						mode={editorState.mode}
 					/>
 				))}
 			</div>
