@@ -21,16 +21,133 @@ import {
 	splitAtCursor,
 } from "./textOperations";
 
+type CommandHandler = (
+	editorState: EditorState,
+) => Promise<EditorState> | EditorState;
+
+const insertModeCommands: Record<string, CommandHandler> = {
+	Escape: (state) => ({ ...state, mode: "normal" }),
+	Enter: (state) => ({ ...splitAtCursor(state) }),
+	Backspace: (state) => ({
+		...state,
+		textState: deleteChar(state.textState),
+	}),
+	"(": (state) => automaticBracketInsertion("(", state),
+	"{": (state) => automaticBracketInsertion("{", state),
+	"[": (state) => automaticBracketInsertion("[", state),
+	'"': (state) => autoQuotePairing('"', state),
+	"'": (state) => autoQuotePairing("'", state),
+	Space: (state) => ({
+		...state,
+		textState: insertString(" ", state.textState),
+	}),
+};
+
+const normalModeCommands: Record<string, CommandHandler> = {
+	Escape: (state) => ({ ...state, pendingOperator: "" }),
+
+	"0": (state) => updateCursor(state, { col: 0 }),
+
+	a: (state) => {
+		const newCol = Math.min(
+			state.textState.cursor.col + 1,
+			state.textState.buffer[state.textState.cursor.row].length,
+		);
+		return updateEditorState(state, {
+			cursor: { col: newCol },
+			mode: "insert",
+		});
+	},
+
+	i: (state) => ({ ...state, mode: "insert" }),
+
+	j: (state) => ({
+		...state,
+		textState: moveCursor(state.textState, "down"),
+	}),
+
+	k: (state) => ({
+		...state,
+		textState: moveCursor(state.textState, "up"),
+	}),
+
+	h: (state) => ({
+		...state,
+		textState: moveCursor(state.textState, "left"),
+	}),
+
+	l: (state) => ({
+		...state,
+		textState: moveCursor(state.textState, "right"),
+	}),
+
+	o: (state) => insertNewLineBelow(state),
+
+	x: (state) => ({
+		...state,
+		textState: deleteCharAtCursor(state.textState),
+	}),
+
+	p: (state) => readClipboardAndInsert(state),
+
+	y: (state) => ({ ...state, pendingOperator: "y" }),
+
+	d: (state) => ({ ...state, pendingOperator: "d" }),
+
+	A: (state) => {
+		const newCol = Math.max(
+			0,
+			state.textState.buffer[state.textState.cursor.row].length,
+		);
+		return updateEditorState(state, {
+			cursor: { col: newCol },
+			mode: "insert",
+		});
+	},
+
+	G: (state) => {
+		const lastRowIndex = Math.max(0, state.textState.buffer.length - 1);
+		const lastRowLength = Math.max(
+			0,
+			state.textState.buffer[lastRowIndex].length - 1,
+		);
+		const col = state.textState.cursor.col;
+		const newCol = col > lastRowLength ? lastRowLength : col;
+		return updateEditorState(state, {
+			cursor: { row: lastRowIndex, col: newCol },
+		});
+	},
+
+	O: (state) => insertNewLineAbove(state),
+};
+
+const pendingOperatorCommands: Record<
+	string,
+	Record<string, CommandHandler>
+> = {
+	d: {
+		d: (state) => ddCommand(state),
+		Escape: (state) => ({ ...state, pendingOperator: "" }),
+	},
+	y: {
+		y: async (state) => {
+			await copyLineToClipboard(state);
+			return { ...state, pendingOperator: "" };
+		},
+		Escape: (state) => ({ ...state, pendingOperator: "" }),
+	},
+};
+
 export const handleKeyEvent = async (
 	e: KeyEvent,
 	editorState: EditorState,
 ): Promise<EditorState> => {
-	if (editorState.mode === "normal") {
-		return await handleNormalMode(e, editorState);
+	if (editorState.mode === "insert") {
+		return handleInsertMode(e, editorState);
 	}
 
-	if (editorState.mode === "insert") {
-		return await handleInsertMode(e, editorState);
+	if (editorState.mode === "normal") {
+		return await handleNormalMode(e, editorState);
 	}
 
 	return editorState;
@@ -40,191 +157,28 @@ const handleInsertMode = async (
 	e: KeyEvent,
 	editorState: EditorState,
 ): Promise<EditorState> => {
-	switch (e.key) {
-		case "Escape":
-			return { ...editorState, mode: "normal" };
-
-		case "Enter":
-			return { ...splitAtCursor(editorState) };
-
-		case "Backspace":
-			return {
-				...editorState,
-				textState: deleteChar(editorState.textState),
-			};
-
-		case "(":
-			return automaticBracketInsertion(e.key, editorState);
-
-		case "{":
-			return automaticBracketInsertion(e.key, editorState);
-
-		case "[":
-			return automaticBracketInsertion(e.key, editorState);
-
-		case '"':
-			return autoQuotePairing(e.key, editorState);
-
-		case "'":
-			return autoQuotePairing(e.key, editorState);
-
-		case "Space":
-			return {
-				...editorState,
-				textState: insertString(e.key, editorState.textState),
-			};
-
-		default:
-			return editorState;
-	}
+	const handler = insertModeCommands[e.key];
+	return handler ? handler(editorState) : editorState;
 };
 
 const handleNormalMode = async (
 	e: KeyEvent,
 	editorState: EditorState,
 ): Promise<EditorState> => {
-	switch (editorState.pendingOperator) {
-		case "d":
-			switch (e.key) {
-				case "d":
-					return ddCommand(editorState);
-
-				default:
-					if (e.key === "Escape") {
-						return { ...editorState, pendingOperator: "" };
-					}
-					return editorState;
+	if (editorState.pendingOperator) {
+		const operatorCommands =
+			pendingOperatorCommands[editorState.pendingOperator];
+		if (operatorCommands) {
+			const handler = operatorCommands[e.key];
+			if (handler) {
+				return await handler(editorState);
 			}
-
-		case "y":
-			switch (e.key) {
-				case "y":
-					await copyLineToClipboard(editorState);
-					return { ...editorState, pendingOperator: "" };
-
-				default:
-					if (e.key === "Escape") {
-						return { ...editorState, pendingOperator: "" };
-					}
-					return editorState;
-			}
-
-		case "":
-			switch (e.key) {
-				case "Escape":
-					return { ...editorState, pendingOperator: "" };
-
-				case "0": {
-					const col: Partial<CursorPosition> = { col: 0 };
-					return updateCursor(editorState, col);
-				}
-
-				case "a": {
-					const newCol: Partial<CursorPosition> = {
-						col: Math.min(
-							editorState.textState.cursor.col + 1,
-							editorState.textState.buffer[editorState.textState.cursor.row]
-								.length,
-						),
-					};
-					const updates = {
-						cursor: newCol,
-						mode: "insert" as Mode,
-					};
-
-					return updateEditorState(editorState, updates);
-				}
-
-				case "i":
-					return { ...editorState, mode: "insert" };
-
-				case "j":
-					return {
-						...editorState,
-						textState: moveCursor(editorState.textState, "down"),
-					};
-
-				case "k":
-					return {
-						...editorState,
-						textState: moveCursor(editorState.textState, "up"),
-					};
-
-				case "h":
-					return {
-						...editorState,
-						textState: moveCursor(editorState.textState, "left"),
-					};
-
-				case "l":
-					return {
-						...editorState,
-						textState: moveCursor(editorState.textState, "right"),
-					};
-
-				case "o":
-					return insertNewLineBelow(editorState);
-
-				case "x":
-					return {
-						...editorState,
-						textState: deleteCharAtCursor(editorState.textState),
-					};
-
-				case "p":
-					return readClipboardAndInsert(editorState);
-
-				case "y":
-					return { ...editorState, pendingOperator: "y" };
-
-				case "d":
-					return { ...editorState, pendingOperator: "d" };
-
-				case "A": {
-					const newCol = Math.max(
-						0,
-						editorState.textState.buffer[editorState.textState.cursor.row]
-							.length,
-					);
-					const updates = {
-						cursor: {
-							col: newCol,
-						},
-						mode: "insert" as Mode,
-					};
-					return updateEditorState(editorState, updates);
-				}
-
-				case "G": {
-					const lastRowIndex = Math.max(
-						0,
-						editorState.textState.buffer.length - 1,
-					);
-					const lastRowLength = Math.max(
-						0,
-						editorState.textState.buffer[lastRowIndex].length - 1,
-					);
-					const col = editorState.textState.cursor.col;
-					const newCol = col > lastRowLength ? lastRowLength : col;
-					const updates = {
-						cursor: {
-							row: lastRowIndex,
-							col: newCol,
-						},
-					};
-					return updateEditorState(editorState, updates);
-				}
-
-				case "O":
-					return insertNewLineAbove(editorState);
-
-				default:
-					return editorState;
-			}
-
-		default:
-			return editorState;
+		}
+		return editorState;
 	}
+
+	const handler = normalModeCommands[e.key];
+	return handler ? await handler(editorState) : editorState;
 };
 
 const updateCursor = (
