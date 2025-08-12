@@ -163,18 +163,7 @@ const handleInsertMode = async (
 	editorState: EditorState,
 ): Promise<EditorState> => {
 	const handler = insertModeCommands[e.key];
-
-	if (handler) {
-		return await handler(editorState);
-	}
-
-	if (e.key.length === 1) {
-		return {
-			...editorState,
-			textState: insertString(e.key, editorState.textState),
-		};
-	}
-	return editorState;
+	return handler ? handler(editorState) : editorState;
 };
 
 const handleNormalMode = async (
