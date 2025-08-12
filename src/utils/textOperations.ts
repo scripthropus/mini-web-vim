@@ -1,4 +1,38 @@
-import type { EditorState, TextState } from "../types/editor";
+import type {
+	CursorPosition,
+	EditorState,
+	Mode,
+	TextState,
+} from "../types/editor";
+
+export const updateCursor = (
+	editorState: EditorState,
+	newCursor: Partial<CursorPosition>,
+): EditorState => {
+	return {
+		...editorState,
+		textState: {
+			...editorState.textState,
+			cursor: { ...editorState.textState.cursor, ...newCursor },
+		},
+	};
+};
+
+export const updateEditorState = (
+	editorState: EditorState,
+	updates: { cursor?: Partial<CursorPosition>; mode?: Mode },
+): EditorState => {
+	return {
+		...editorState,
+		...(updates.mode && { mode: updates.mode }),
+		textState: {
+			...editorState.textState,
+			...(updates.cursor && {
+				cursor: { ...editorState.textState.cursor, ...updates.cursor },
+			}),
+		},
+	};
+};
 
 export const insertString = (str: string, textState: TextState): TextState => {
 	const { buffer, cursor } = textState;
@@ -163,21 +197,101 @@ export const splitAtCursor = (editorState: EditorState): EditorState => {
 	return { ...editorState, textState: newTextState };
 };
 
-// dj: 現在行と下の行を削除
 export const deleteCurrentAndNextLine = (
 	editorState: EditorState,
 ): EditorState => {
+	const { buffer, cursor } = editorState.textState;
+	const row = cursor.row;
+	const col = cursor.col;
+	const upperRowLen = buffer[row - 1 >= 0 ? row - 1 : 0].length;
+	const newCol = Math.min(upperRowLen, col);
+
+	const len = buffer.length - 1;
+
+	if (row < len) {
+		const newBuffer = buffer.toSpliced(row, 2);
+		const textState: TextState = {
+			buffer: newBuffer,
+			cursor: { row: row - 1, col: newCol },
+		};
+		const newState: EditorState = {
+			...editorState,
+			textState: textState,
+			pendingOperator: "",
+		};
+		return newState;
+	}
+	if (row === len) {
+		const newBuffer = buffer.toSpliced(row, 1);
+		const textState: TextState = {
+			buffer: newBuffer,
+			cursor: { row: row - 1, col: newCol },
+		};
+		const newState: EditorState = {
+			...editorState,
+			textState: textState,
+			pendingOperator: "",
+		};
+		return newState;
+	}
 	return editorState;
 };
 
-// dk: 現在行と上の行を削除
 export const deleteCurrentAndPreviousLine = (
 	editorState: EditorState,
 ): EditorState => {
-	return editorState;
+	const { buffer, cursor } = editorState.textState;
+	const row = cursor.row;
+	const col = cursor.col;
+	const upperRowLen = buffer[row - 1 >= 0 ? row - 1 : 0].length;
+	const newCol = Math.min(upperRowLen, col);
+
+	if (row === 0) {
+		return editorState;
+	}
+	const newBuffer = buffer.toSpliced(row - 1, 2);
+	const textState: TextState = {
+		buffer: newBuffer,
+		cursor: { row: row - 2, col: newCol },
+	};
+	const newState: EditorState = {
+		...editorState,
+		textState: textState,
+		pendingOperator: "",
+	};
+
+	return newState;
 };
 
-// dh: カーソル位置から行頭まで削除
+export const dlCommand = (editorState: EditorState): EditorState => {
+	const newState: EditorState = {
+		...editorState,
+		textState: deleteCharAtCursor(editorState.textState),
+		pendingOperator: "",
+	};
+
+	return newState;
+};
+
+export const dhCommand = (editorState: EditorState): EditorState => {
+	const cursor = editorState.textState.cursor;
+	const newCursor = {
+		...cursor,
+		col: cursor.col - 2 >= 0 ? cursor.col - 1 : 0,
+	};
+	const textState: TextState = {
+		...editorState.textState,
+		cursor: newCursor,
+	};
+
+	const newState: EditorState = {
+		...editorState,
+		textState: deleteCharAtCursor(textState),
+		pendingOperator: "",
+	};
+
+	return newState;
+};
 export const deleteToLineStart = (editorState: EditorState): EditorState => {
 	return editorState;
 };

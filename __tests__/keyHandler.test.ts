@@ -384,7 +384,7 @@ test("エスケープが押された際にpendingOperatorが消える", async ()
   expect(result).toStrictEqual(expected);
 });
 
-/*
+
 test("dj で現在行と下の行が削除されカーソルが上の行のmin(もとの位置，移動後の行の終端)", async() => {
   const keyEvent = new KeyboardEvent("keydown", { key: "j"});
 
@@ -414,20 +414,137 @@ test("dj で現在行と下の行が削除されカーソルが上の行のmin(�
 
 });
 
-/*
-test("dk で現在行と上の行が削除され現在", async() => {
-  expect()
+test("dj で現在行が最終行であったら現在行のみが削除されカーソルが上の行のmin(もとの位置，移動後の行の終端)", async() => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "j"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 2, col: 12}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+    textState:{
+      buffer: ["line1", "line2" ],
+      cursor: { row: 1, col: 5}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+
+  } ;
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
 
 });
 
-test("dl で左の文字が削除される", async() => {
+test("dk で現在行と上の行が削除され，カーソルが上の行のmin(もとの位置，移動後の行の終端)", async() => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "k"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 2, col: 12}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+    textState:{
+      buffer: ["line1" ],
+      cursor: { row: 0, col: 5}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+
+  } ;
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
 });
 
-test("dj で現在行と下の行が削除される", async() => {
+test("dk で現在行が0行目だったら何も起こらない", async() => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "k"});
 
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 0, col: 2}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  structuredClone(editorState);
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
 });
 
-*/
+test("dl でカーソルの文字が削除される", async() => {
+   const keyEvent = new KeyboardEvent("keydown", { key: "l"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 0, col: 2}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+     textState:{
+      buffer: ["lie1", "line2", "const main = () => {}"],
+      cursor: { row: 0, col: 2}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+test("dh でカーソルの前の文字が削除される", async() => {
+   const keyEvent = new KeyboardEvent("keydown", { key: "h"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 0, col: 2}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+     textState:{
+      buffer: ["lne1", "line2", "const main = () => {}"],
+      cursor: { row: 0, col: 1}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+
 
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});

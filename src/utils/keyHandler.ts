@@ -1,9 +1,4 @@
-import type {
-	CursorPosition,
-	EditorState,
-	KeyEvent,
-	Mode,
-} from "../types/editor";
+import type { EditorState, KeyEvent } from "../types/editor";
 import {
 	copyLineToClipboard,
 	ddCommand,
@@ -15,10 +10,16 @@ import {
 	autoQuotePairing,
 	deleteChar,
 	deleteCharAtCursor,
+	deleteCurrentAndNextLine,
+	deleteCurrentAndPreviousLine,
+	dhCommand,
+	dlCommand,
 	insertNewLineAbove,
 	insertNewLineBelow,
 	insertString,
 	splitAtCursor,
+	updateCursor,
+	updateEditorState,
 } from "./textOperations";
 
 type CommandHandler = (
@@ -127,6 +128,10 @@ const pendingOperatorCommands: Record<
 > = {
 	d: {
 		d: (state) => ddCommand(state),
+		j: (state) => deleteCurrentAndNextLine(state),
+		k: (state) => deleteCurrentAndPreviousLine(state),
+		l: (state) => dlCommand(state),
+		h: (state) => dhCommand(state),
 		Escape: (state) => ({ ...state, pendingOperator: "" }),
 	},
 	y: {
@@ -179,33 +184,4 @@ const handleNormalMode = async (
 
 	const handler = normalModeCommands[e.key];
 	return handler ? await handler(editorState) : editorState;
-};
-
-const updateCursor = (
-	editorState: EditorState,
-	newCursor: Partial<CursorPosition>,
-): EditorState => {
-	return {
-		...editorState,
-		textState: {
-			...editorState.textState,
-			cursor: { ...editorState.textState.cursor, ...newCursor },
-		},
-	};
-};
-
-const updateEditorState = (
-	editorState: EditorState,
-	updates: { cursor?: Partial<CursorPosition>; mode?: Mode },
-): EditorState => {
-	return {
-		...editorState,
-		...(updates.mode && { mode: updates.mode }),
-		textState: {
-			...editorState.textState,
-			...(updates.cursor && {
-				cursor: { ...editorState.textState.cursor, ...updates.cursor },
-			}),
-		},
-	};
 };
