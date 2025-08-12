@@ -162,3 +162,22 @@ export const splitAtCursor = (editorState: EditorState): EditorState => {
 
 	return { ...editorState, textState: newTextState };
 };
+
+// dj: 現在行と下の行を削除
+export const deleteCurrentAndNextLine = (
+	editorState: EditorState,
+): EditorState => {
+	return editorState;
+};
+
+// dk: 現在行と上の行を削除
+export const deleteCurrentAndPreviousLine = (
+	editorState: EditorState,
+): EditorState => {
+	return editorState;
+};
+
+// dh: カーソル位置から行頭まで削除
+export const deleteToLineStart = (editorState: EditorState): EditorState => {
+	return editorState;
+};

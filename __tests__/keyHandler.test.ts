@@ -384,6 +384,51 @@ test("エスケープが押された際にpendingOperatorが消える", async ()
   expect(result).toStrictEqual(expected);
 });
 
+/*
+test("dj で現在行と下の行が削除されカーソルが上の行のmin(もとの位置，移動後の行の終端)", async() => {
+  const keyEvent = new KeyboardEvent("keydown", { key: "j"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 1, col: 2}
+    },
+    pendingOperator: "d",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+    textState:{
+      buffer: ["line1" ],
+      cursor: { row: 0, col: 2}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+
+  } ;
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+
+});
+
+/*
+test("dk で現在行と上の行が削除され現在", async() => {
+  expect()
+
+});
+
+test("dl で左の文字が削除される", async() => {
+});
+
+test("dj で現在行と下の行が削除される", async() => {
+
+});
+
+*/
+
 test('無効なキーでは何も変わらない', async () => {
   const keyEvent = new KeyboardEvent("keydown", { key: ""});
   const result = await handleKeyEvent(keyEvent, editorState);

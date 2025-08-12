@@ -1,4 +1,9 @@
-import type { EditorState, KeyEvent } from "../types/editor";
+import type {
+	CursorPosition,
+	EditorState,
+	KeyEvent,
+	Mode,
+} from "../types/editor";
 import {
 	copyLineToClipboard,
 	ddCommand,
@@ -21,179 +26,232 @@ export const handleKeyEvent = async (
 	editorState: EditorState,
 ): Promise<EditorState> => {
 	if (editorState.mode === "normal") {
-		switch (e.key) {
-			case "Escape":
-				return { ...editorState, pendingOperator: "" };
-
-			case "0": {
-				const row = editorState.textState.cursor.row;
-				const newCursor = { row: row, col: 0 };
-				return {
-					...editorState,
-					textState: {
-						...editorState.textState,
-						cursor: newCursor,
-					},
-				};
-			}
-
-			case "a": {
-				const newCol = Math.min(
-					editorState.textState.cursor.col + 1,
-					editorState.textState.buffer[editorState.textState.cursor.row].length,
-				);
-				return {
-					...editorState,
-					textState: {
-						...editorState.textState,
-						cursor: { ...editorState.textState.cursor, col: newCol },
-					},
-					mode: "insert",
-				};
-			}
-
-			case "i":
-				return { ...editorState, mode: "insert" };
-
-			case "j":
-				return {
-					...editorState,
-					textState: moveCursor(editorState.textState, "down"),
-				};
-
-			case "k":
-				return {
-					...editorState,
-					textState: moveCursor(editorState.textState, "up"),
-				};
-
-			case "h":
-				return {
-					...editorState,
-					textState: moveCursor(editorState.textState, "left"),
-				};
-
-			case "l":
-				return {
-					...editorState,
-					textState: moveCursor(editorState.textState, "right"),
-				};
-
-			case "o":
-				return insertNewLineBelow(editorState);
-
-			case "x":
-				return {
-					...editorState,
-					textState: deleteCharAtCursor(editorState.textState),
-				};
-
-			case "p":
-				return readClipboardAndInsert(editorState);
-
-			case "y":
-				if (editorState.pendingOperator === "y") {
-					copyLineToClipboard(editorState);
-				}
-				if (editorState.pendingOperator === "") {
-					return { ...editorState, pendingOperator: "y" };
-				}
-
-				return { ...editorState, pendingOperator: "" };
-
-			case "d":
-				if (editorState.pendingOperator === "") {
-					return { ...editorState, pendingOperator: "d" };
-				}
-				if (editorState.pendingOperator === "d") {
-					return ddCommand(editorState);
-				}
-				return editorState;
-
-			case "A": {
-				const row = editorState.textState.cursor.row;
-				const newCol = Math.max(0, editorState.textState.buffer[row].length);
-				return {
-					...editorState,
-					textState: {
-						...editorState.textState,
-						cursor: { ...editorState.textState.cursor, col: newCol },
-					},
-					mode: "insert",
-				};
-			}
-
-			case "G": {
-				const lastRowIndex = Math.max(
-					0,
-					editorState.textState.buffer.length - 1,
-				);
-				const lastRowLength = Math.max(
-					0,
-					editorState.textState.buffer[lastRowIndex].length - 1,
-				);
-				const col = editorState.textState.cursor.col;
-				const newCol = col > lastRowLength ? lastRowLength : col;
-				return {
-					...editorState,
-					textState: {
-						...editorState.textState,
-						cursor: { row: lastRowIndex, col: newCol },
-					},
-				};
-			}
-
-			case "O":
-				return insertNewLineAbove(editorState);
-
-			default:
-				return editorState;
-		}
+		return await handleNormalMode(e, editorState);
 	}
 
 	if (editorState.mode === "insert") {
-		if (e.key === "Escape") {
+		return await handleInsertMode(e, editorState);
+	}
+
+	return editorState;
+};
+
+const handleInsertMode = async (
+	e: KeyEvent,
+	editorState: EditorState,
+): Promise<EditorState> => {
+	switch (e.key) {
+		case "Escape":
 			return { ...editorState, mode: "normal" };
-		}
 
-		if (e.key === "Enter") {
+		case "Enter":
 			return { ...splitAtCursor(editorState) };
-		}
 
-		if (e.key === "Backspace") {
+		case "Backspace":
 			return {
 				...editorState,
 				textState: deleteChar(editorState.textState),
 			};
-		}
 
-		if (e.key === "(") {
+		case "(":
 			return automaticBracketInsertion(e.key, editorState);
-		}
 
-		if (e.key === "{") {
+		case "{":
 			return automaticBracketInsertion(e.key, editorState);
-		}
 
-		if (e.key === "[") {
+		case "[":
 			return automaticBracketInsertion(e.key, editorState);
-		}
 
-		if (e.key === '"') {
+		case '"':
 			return autoQuotePairing(e.key, editorState);
-		}
 
-		if (e.key === "'") {
+		case "'":
 			return autoQuotePairing(e.key, editorState);
-		}
 
-		if (e.key.length === 1 || e.key === "Space") {
+		case "Space":
 			return {
 				...editorState,
 				textState: insertString(e.key, editorState.textState),
 			};
-		}
-	}
 
-	return editorState;
+		default:
+			return editorState;
+	}
+};
+
+const handleNormalMode = async (
+	e: KeyEvent,
+	editorState: EditorState,
+): Promise<EditorState> => {
+	switch (editorState.pendingOperator) {
+		case "d":
+			switch (e.key) {
+				case "d":
+					return ddCommand(editorState);
+
+				default:
+					if (e.key === "Escape") {
+						return { ...editorState, pendingOperator: "" };
+					}
+					return editorState;
+			}
+
+		case "y":
+			switch (e.key) {
+				case "y":
+					await copyLineToClipboard(editorState);
+					return { ...editorState, pendingOperator: "" };
+
+				default:
+					if (e.key === "Escape") {
+						return { ...editorState, pendingOperator: "" };
+					}
+					return editorState;
+			}
+
+		case "":
+			switch (e.key) {
+				case "Escape":
+					return { ...editorState, pendingOperator: "" };
+
+				case "0": {
+					const col: Partial<CursorPosition> = { col: 0 };
+					return updateCursor(editorState, col);
+				}
+
+				case "a": {
+					const newCol: Partial<CursorPosition> = {
+						col: Math.min(
+							editorState.textState.cursor.col + 1,
+							editorState.textState.buffer[editorState.textState.cursor.row]
+								.length,
+						),
+					};
+					const updates = {
+						cursor: newCol,
+						mode: "insert" as Mode,
+					};
+
+					return updateEditorState(editorState, updates);
+				}
+
+				case "i":
+					return { ...editorState, mode: "insert" };
+
+				case "j":
+					return {
+						...editorState,
+						textState: moveCursor(editorState.textState, "down"),
+					};
+
+				case "k":
+					return {
+						...editorState,
+						textState: moveCursor(editorState.textState, "up"),
+					};
+
+				case "h":
+					return {
+						...editorState,
+						textState: moveCursor(editorState.textState, "left"),
+					};
+
+				case "l":
+					return {
+						...editorState,
+						textState: moveCursor(editorState.textState, "right"),
+					};
+
+				case "o":
+					return insertNewLineBelow(editorState);
+
+				case "x":
+					return {
+						...editorState,
+						textState: deleteCharAtCursor(editorState.textState),
+					};
+
+				case "p":
+					return readClipboardAndInsert(editorState);
+
+				case "y":
+					return { ...editorState, pendingOperator: "y" };
+
+				case "d":
+					return { ...editorState, pendingOperator: "d" };
+
+				case "A": {
+					const newCol = Math.max(
+						0,
+						editorState.textState.buffer[editorState.textState.cursor.row]
+							.length,
+					);
+					const updates = {
+						cursor: {
+							col: newCol,
+						},
+						mode: "insert" as Mode,
+					};
+					return updateEditorState(editorState, updates);
+				}
+
+				case "G": {
+					const lastRowIndex = Math.max(
+						0,
+						editorState.textState.buffer.length - 1,
+					);
+					const lastRowLength = Math.max(
+						0,
+						editorState.textState.buffer[lastRowIndex].length - 1,
+					);
+					const col = editorState.textState.cursor.col;
+					const newCol = col > lastRowLength ? lastRowLength : col;
+					const updates = {
+						cursor: {
+							row: lastRowIndex,
+							col: newCol,
+						},
+					};
+					return updateEditorState(editorState, updates);
+				}
+
+				case "O":
+					return insertNewLineAbove(editorState);
+
+				default:
+					return editorState;
+			}
+
+		default:
+			return editorState;
+	}
+};
+
+const updateCursor = (
+	editorState: EditorState,
+	newCursor: Partial<CursorPosition>,
+): EditorState => {
+	return {
+		...editorState,
+		textState: {
+			...editorState.textState,
+			cursor: { ...editorState.textState.cursor, ...newCursor },
+		},
+	};
+};
+
+const updateEditorState = (
+	editorState: EditorState,
+	updates: { cursor?: Partial<CursorPosition>; mode?: Mode },
+): EditorState => {
+	return {
+		...editorState,
+		...(updates.mode && { mode: updates.mode }),
+		textState: {
+			...editorState.textState,
+			...(updates.cursor && {
+				cursor: { ...editorState.textState.cursor, ...updates.cursor },
+			}),
+		},
+	};
 };
