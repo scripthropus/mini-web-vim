@@ -17,6 +17,8 @@ import {
 	insertNewLineAbove,
 	insertNewLineBelow,
 	insertString,
+	shiftLeft,
+	shiftRight,
 	splitAtCursor,
 	updateCursor,
 	updateEditorState,
@@ -120,6 +122,8 @@ const normalModeCommands: Record<string, CommandHandler> = {
 	},
 
 	O: (state) => insertNewLineAbove(state),
+	">": (state) => ({ ...state, pendingOperator: ">" }),
+	"<": (state) => ({ ...state, pendingOperator: "<" }),
 };
 
 const pendingOperatorCommands: Record<
@@ -139,6 +143,14 @@ const pendingOperatorCommands: Record<
 			await copyLineToClipboard(state);
 			return { ...state, pendingOperator: "" };
 		},
+		Escape: (state) => ({ ...state, pendingOperator: "" }),
+	},
+	">": {
+		">": async (state) => shiftRight(state),
+		Escape: (state) => ({ ...state, pendingOperator: "" }),
+	},
+	"<": {
+		"<": async (state) => shiftLeft(state),
 		Escape: (state) => ({ ...state, pendingOperator: "" }),
 	},
 };

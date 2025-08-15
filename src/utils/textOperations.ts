@@ -1,3 +1,4 @@
+import test from "node:test";
 import type {
 	CursorPosition,
 	EditorState,
@@ -293,5 +294,61 @@ export const dhCommand = (editorState: EditorState): EditorState => {
 	return newState;
 };
 export const deleteToLineStart = (editorState: EditorState): EditorState => {
+	return editorState;
+};
+
+export const shiftRight = (editorState: EditorState): EditorState => {
+	const textState: TextState = {
+		...editorState.textState,
+		cursor: {
+			...editorState.textState.cursor,
+			col: 0,
+		},
+	};
+	const shiftedCol = editorState.textState.cursor.col + 2;
+	const newTextState = insertString("  ", textState);
+	newTextState.cursor.col = shiftedCol;
+
+	return { ...editorState, textState: newTextState, pendingOperator: "" };
+};
+
+export const shiftLeft = (editorState: EditorState): EditorState => {
+	const { buffer, cursor } = editorState.textState;
+	let newLine = buffer[cursor.row];
+	if (buffer[cursor.row][0] === " " && buffer[cursor.row][1] === " ") {
+		newLine = buffer[cursor.row].slice(2);
+		buffer[cursor.row] = newLine;
+		const newCursor = {
+			row: cursor.row,
+			col: Math.max(cursor.col - 2, 0),
+		};
+
+		return {
+			...editorState,
+			textState: {
+				buffer: buffer,
+				cursor: newCursor,
+			},
+			pendingOperator: "",
+		};
+	}
+
+	if (buffer[cursor.row][0] === " ") {
+		newLine = buffer[cursor.row].slice(1);
+		buffer[cursor.row] = newLine;
+		const newCursor = {
+			row: cursor.row,
+			col: Math.max(cursor.col - 1, 0),
+		};
+
+		return {
+			...editorState,
+			textState: {
+				buffer: buffer,
+				cursor: newCursor,
+			},
+			pendingOperator: "",
+		};
+	}
 	return editorState;
 };

@@ -544,6 +544,61 @@ test("dh でカーソルの前の文字が削除される", async() => {
   expect(result).toStrictEqual(expected);
 });
 
+test(">> でインデントされる", async() => {
+ const keyEvent = new KeyboardEvent("keydown", { key: ">"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 1, col: 2}
+    },
+    pendingOperator: ">",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+     textState:{
+      buffer: ["line1", "  line2", "const main = () => {}"],
+      cursor: { row: 1, col: 4}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+test("<< でインデントが消される", async() => {
+ const keyEvent = new KeyboardEvent("keydown", { key: "<"});
+
+  const editorState: EditorState = {
+    textState:{
+      buffer: ["line1", "  line2", "const main = () => {}"],
+      cursor: { row: 1, col: 4}
+    },
+    pendingOperator: "<",
+    operatorCount: 1,
+    mode: "normal"
+  };
+
+  const expected: EditorState =  {
+     textState:{
+      buffer: ["line1", "line2", "const main = () => {}"],
+      cursor: { row: 1, col: 2}
+    },
+    pendingOperator: "",
+    operatorCount: 1,
+    mode: "normal"
+  };
+  const result = await handleKeyEvent(keyEvent, editorState);
+
+  expect(result).toStrictEqual(expected);
+});
+
+
 
 
 test('無効なキーでは何も変わらない', async () => {
