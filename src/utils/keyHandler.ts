@@ -17,6 +17,8 @@ import {
 	insertNewLineAbove,
 	insertNewLineBelow,
 	insertString,
+	moveToNextWord,
+	moveToPreviousWord,
 	shiftLeft,
 	shiftRight,
 	splitAtCursor,
@@ -62,6 +64,8 @@ const normalModeCommands: Record<string, CommandHandler> = {
 		});
 	},
 
+	b: (state) => moveToPreviousWord(state),
+
 	i: (state) => ({ ...state, mode: "insert" }),
 
 	j: (state) => ({
@@ -85,6 +89,8 @@ const normalModeCommands: Record<string, CommandHandler> = {
 	}),
 
 	o: (state) => insertNewLineBelow(state),
+
+	w: (state) => moveToNextWord(state),
 
 	x: (state) => ({
 		...state,

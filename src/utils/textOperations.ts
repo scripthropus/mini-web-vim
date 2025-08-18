@@ -1,4 +1,3 @@
-import test from "node:test";
 import type {
 	CursorPosition,
 	EditorState,
@@ -351,4 +350,149 @@ export const shiftLeft = (editorState: EditorState): EditorState => {
 		};
 	}
 	return editorState;
+};
+
+export const moveToNextWord = (editorState: EditorState): EditorState => {
+	const { textState } = editorState;
+	const { buffer, cursor } = textState;
+
+	let { row, col } = cursor;
+
+	if (row >= buffer.length) {
+		return editorState;
+	}
+
+	let currentLine = buffer[row];
+
+	const isWordChar = (char: string): boolean => {
+		return /[a-zA-Z0-9_]/.test(char);
+	};
+
+	const isWhitespace = (char: string): boolean => {
+		return /\s/.test(char);
+	};
+
+	const getCharType = (char: string): "word" | "space" | "punct" => {
+		if (isWordChar(char)) return "word";
+		if (isWhitespace(char)) return "space";
+		return "punct";
+	};
+
+	if (col >= currentLine.length) {
+		if (row + 1 < buffer.length) {
+			row++;
+			col = 0;
+			currentLine = buffer[row];
+
+			while (col < currentLine.length && isWhitespace(currentLine[col])) {
+				col++;
+			}
+
+			return updateCursor(editorState, { row, col });
+		}
+		return editorState;
+	}
+
+	const currentCharType = getCharType(currentLine[col]);
+
+	while (
+		col < currentLine.length &&
+		getCharType(currentLine[col]) === currentCharType
+	) {
+		col++;
+	}
+
+	while (col < currentLine.length && isWhitespace(currentLine[col])) {
+		col++;
+	}
+
+	if (col >= currentLine.length) {
+		if (row + 1 < buffer.length) {
+			row++;
+			col = 0;
+			currentLine = buffer[row];
+
+			while (col < currentLine.length && isWhitespace(currentLine[col])) {
+				col++;
+			}
+		} else {
+			col = Math.max(0, currentLine.length - 1);
+		}
+	}
+
+	return updateCursor(editorState, { row, col });
+};
+
+export const moveToPreviousWord = (editorState: EditorState): EditorState => {
+	const { textState } = editorState;
+	const { buffer, cursor } = textState;
+
+	let { row, col } = cursor;
+
+	if (row < 0 || row >= buffer.length) {
+		return editorState;
+	}
+
+	let currentLine = buffer[row];
+
+	const isWordChar = (char: string): boolean => {
+		return /[a-zA-Z0-9_]/.test(char);
+	};
+
+	const isWhitespace = (char: string): boolean => {
+		return /\s/.test(char);
+	};
+
+	const getCharType = (char: string): "word" | "space" | "punct" => {
+		if (isWordChar(char)) return "word";
+		if (isWhitespace(char)) return "space";
+		return "punct";
+	};
+
+	if (col <= 0) {
+		if (row - 1 >= 0) {
+			row--;
+			currentLine = buffer[row];
+			col = currentLine.length;
+		} else {
+			return editorState;
+		}
+	}
+
+	if (col > currentLine.length) {
+		col = currentLine.length;
+	}
+
+	while (col > 0 && isWhitespace(currentLine[col - 1])) {
+		col--;
+	}
+
+	if (col === 0) {
+		if (row - 1 >= 0) {
+			row--;
+			currentLine = buffer[row];
+			col = currentLine.length;
+
+			while (col > 0 && isWhitespace(currentLine[col - 1])) {
+				col--;
+			}
+
+			if (col > 0) {
+				const charType = getCharType(currentLine[col - 1]);
+				while (col > 0 && getCharType(currentLine[col - 1]) === charType) {
+					col--;
+				}
+			}
+		}
+
+		return updateCursor(editorState, { row, col });
+	}
+
+	const prevCharType = getCharType(currentLine[col - 1]);
+
+	while (col > 0 && getCharType(currentLine[col - 1]) === prevCharType) {
+		col--;
+	}
+
+	return updateCursor(editorState, { row, col });
 };
